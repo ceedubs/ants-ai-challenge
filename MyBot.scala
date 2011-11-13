@@ -29,4 +29,24 @@ class MyBot extends Bot {
       }
     }.toSet
   }
+
+  // TODO treat explored and unexplored tiles differently
+  // TODO refactor hard-coding and probably put in a separate class
+  def rewardOf(tile: Tile, game: Game): Int = {
+    if (game.board.myAnts.contains(tile)) {
+      return Int.MinValue  
+    } else if (game.board.water.contains(tile)) {
+      return Int.MinValue
+    } else if (game.board.food.contains(tile)) {
+      return 5 
+    } else if (game.board.myHills.contains(tile)) {
+      return Int.MinValue / 2
+    } else if (game.board.enemyHills.contains(tile)) {
+      return 10
+    } else if (game.board.enemyAnts.contains(tile)) {
+      return -2
+    } else {
+      return -1
+    }
+  }
 }
