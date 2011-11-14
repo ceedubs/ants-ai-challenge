@@ -3,12 +3,16 @@ object MyBot extends App {
 }
 
 class MyBot extends Bot {
+  var beliefState = BeliefState()
 
   def ordersFrom(initialGame: Game): Set[Order] = {
 
     var updatedGame = initialGame
+    println("food: " + initialGame.board.food)
     initialGame.board.myAnts.values.flatMap{myAnt =>
-      val allowedMovements: Set[AntMovement] = AntMovement.allowedFor(myAnt).in(updatedGame) 
+      println("ant tile: " + myAnt.tile)
+      beliefState = beliefState.copy(explored = beliefState.explored + myAnt.tile)
+      val allowedMovements = AntMovement.allowedFor(myAnt).in(game = updatedGame, beliefState = beliefState)
       val bestMovement = allowedMovements.maxBy{movement =>
         movement.utility
       }
