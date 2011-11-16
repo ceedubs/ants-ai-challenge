@@ -25,12 +25,13 @@ object AntMovement {
     def in(game: Game, beliefState: BeliefState = BeliefState()): Set[AntMovement] = {
       val directions = List(North, East, South, West)
       val currentTile = ant.tile
-      val adjacentReachableTiles = directions.map{direction =>
+      val adjacentTiles = directions.map{direction =>
         game.tile(direction).of(currentTile)
-      }.filter{tile =>
+      }.toSet
+      val reachableTiles = (adjacentTiles + currentTile).filter{tile =>
         !game.board.water.contains(tile)
       }
-      val possibleNextTiles = adjacentReachableTiles.toSet + currentTile
+      val possibleNextTiles = reachableTiles.toSet
       possibleNextTiles.map{ nextTile =>
         AntMovement(ant = ant, to = nextTile, gameBeforeMove = game, beliefState = beliefState)
       }
