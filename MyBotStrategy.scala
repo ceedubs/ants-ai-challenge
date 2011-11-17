@@ -1,7 +1,7 @@
-class MyBotStrategy(game: Game, beliefState: BeliefState = BeliefState()) {
-  val discountFactor = 0.7f // gamma
-  val numActionsToLookAhead = 20
-  val numValueIterations = 2 * numActionsToLookAhead
+class MyBotStrategy(game: Game, gameTracker: GameTracker) {
+  val discountFactor = 0.95f // gamma
+  val numActionsToLookAhead = 10
+  val numValueIterations = (1.5 * numActionsToLookAhead).toInt
 
   def rewardOf(tile: Tile): Int = {
     val board = game.board
@@ -17,23 +17,29 @@ class MyBotStrategy(game: Game, beliefState: BeliefState = BeliefState()) {
       return 500
     } else if (board.enemyAnts.contains(tile)) {
       return -200
-    } else if (beliefState.explored.contains(tile)) {
-      return -50
-    } else { // unexplored
-      return 5
+    } else {
+      val lastTurnVisited = gameTracker.tileToLastTurnVisited.getOrElse(tile, 0); 
+      // consider modifying so that this doesn't end up weighting more than other things if a lot of turns have passed since a square was visited
+      return game.turn - lastTurnVisited 
     }
   }
 
   def calculatedUtilities: Map[Tile, Float] = {
-    val tilesToConsider = tilesToConsiderIn(game, beliefState) 
+    val tilesToConsider = tilesToConsiderIn(game) 
     var tileUtilities: Map[Tile, Float] = Map()
     for (i <- 1 to numValueIterations) {
       val updatedTileUtilities: collection.mutable.Map[Tile, Float] = collection.mutable.Map()
       tilesToConsider.foreach{tile =>
         val adjacentTiles = AntMovement.allowedFor(MyAnt(tile)).in(game).map{_.to}.toSet - tile
-        val maxAdjacentTileUtility = adjacentTiles.map{adjacentTile =>
-          tileUtilities.getOrElse(adjacentTile, 0f)
-        }.max
+
+        val maxAdjacentTileUtility =
+          if (adjacentTiles.isEmpty)
+            Float.MinValue
+          else
+            adjacentTiles.map{adjacentTile =>
+              tileUtilities.getOrElse(adjacentTile, 0f)
+            }.max
+        
         val reward = rewardOf(tile)
         val updatedUtility = reward + discountFactor * maxAdjacentTileUtility
         updatedTileUtilities += tile -> updatedUtility
@@ -43,7 +49,7 @@ class MyBotStrategy(game: Game, beliefState: BeliefState = BeliefState()) {
     tileUtilities
   }
 
-  private def tilesToConsiderIn(game: Game, beliefState: BeliefState = BeliefState()): Set[Tile] = {
+  private def tilesToConsiderIn(game: Game): Set[Tile] = {
     val reachableTiles: collection.mutable.Set[Tile] = collection.mutable.Set()
     var leaves: Set[Tile] = game.board.myAnts.keySet
     for (i <- 1 to numActionsToLookAhead) {
