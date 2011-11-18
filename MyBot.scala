@@ -26,13 +26,25 @@ class MyBot extends Bot {
 
   // TODO update attributes other than explored
   private def updatedGameTracker(game: Game, previousGameTracker: GameTracker = GameTracker()) = {
+//    val startTime = System.currentTimeMillis()
     val currentTurn = game.turn
-    val updates = game.board.myAnts.keySet.map{tile =>
+    val myAntTiles = game.board.myAnts.keySet
+    val visitedUpdates = myAntTiles.map{tile =>
       (tile, currentTurn)
     }
-    val updatedTileVisits = previousGameTracker.tileToLastTurnVisited ++ updates
+    val updatedTileVisits = previousGameTracker.tileToLastTurnVisited ++ visitedUpdates
+
+    val adjacentUpdates = myAntTiles.filterNot{
+      previousGameTracker.tileToAdjacentReachableTiles.contains(_)
+    }.map{tile =>
+      val adjacentTiles = AntMovement.allowedFor(MyAnt(tile)).in(game).map(_.to) - tile
+      (tile, adjacentTiles)
+    }
+    val updatedAdjacentTiles = previousGameTracker.tileToAdjacentReachableTiles ++ adjacentUpdates
     // TODO explored should really include all tiles that have been within visibility - not just tiles to which ants have actually moved
-    previousGameTracker.copy(tileToLastTurnVisited = updatedTileVisits)
+//    val timeTook = System.currentTimeMillis() - startTime
+//    println("updatedGameTracker took millis: " + timeTook)
+    previousGameTracker.copy(tileToLastTurnVisited = updatedTileVisits, tileToAdjacentReachableTiles = updatedAdjacentTiles)
   }
 
 }
