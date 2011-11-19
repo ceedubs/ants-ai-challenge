@@ -51,5 +51,22 @@ sealed trait Game {
       }
     }
   }
+
+// TODO finish
+//  def tilesWithinRadius(radius: Int) = new {
+//    def of(tile: Tile): Set[Tile] = {
+//      // to save on calculations, first make a bounding box then filter down
+//      val columnsInBox: collections.immutable.Set[Int] = collections.immutable.Set()
+//      // columns to the east (including current tile)
+//      for (nonWrappingX <- tile.column to tile.column + radius) {
+//        val wrappedX = nonWrappingX % parameters.columns 
+//        columnsInBox += wrappedX
+//      }
+//      // columns to the west (excluding current tile)
+//      for (nonWrappingX <- tile.column - 1 to tile.column - radius) {
+//        //TODO
+//      }
+//    }
+//  } 
 }
 
