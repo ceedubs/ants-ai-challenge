@@ -30,7 +30,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
   def calculatedUtilities: Map[Tile, Float] = {
 //    val startTime = System.currentTimeMillis()
     val timeToStop = game.turnStartTime + game.parameters.turnTime / 2
-    println("timeToStop: " + timeToStop)
+//    println("timeToStop: " + timeToStop)
     val tilesToConsider = tilesToConsiderIn(game) 
 //    println("tilesToConsider: " + tilesToConsider)
     var tileUtilities: Map[Tile, Float] = Map()
@@ -62,7 +62,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     }
 //    val timeTook = System.currentTimeMillis - startTime
 //    println("calcuatedUtilities took millis: " + timeTook)
-    println("num iterations: " + iterationNum)
+//    println("num iterations: " + iterationNum)
     tileUtilities.withDefaultValue(0f)
   }
 
