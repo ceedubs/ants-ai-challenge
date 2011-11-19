@@ -52,21 +52,37 @@ sealed trait Game {
     }
   }
 
-// TODO finish
-//  def tilesWithinRadius(radius: Int) = new {
-//    def of(tile: Tile): Set[Tile] = {
-//      // to save on calculations, first make a bounding box then filter down
-//      val columnsInBox: collections.immutable.Set[Int] = collections.immutable.Set()
-//      // columns to the east (including current tile)
-//      for (nonWrappingX <- tile.column to tile.column + radius) {
-//        val wrappedX = nonWrappingX % parameters.columns 
-//        columnsInBox += wrappedX
-//      }
-//      // columns to the west (excluding current tile)
-//      for (nonWrappingX <- tile.column - 1 to tile.column - radius) {
-//        //TODO
-//      }
-//    }
-//  } 
+  // TODO finish
+  def tilesWithinRadius(radiusSquared: Int) = new {
+    private val radiusNotSquared = (math.ceil(math.sqrt(radiusSquared))).toInt
+    def of(tile: Tile): Set[Tile] = {
+      // to save on calculations, first make a bounding box then filter down
+      val numColumns = parameters.columns
+      val columnsToEast = ((tile.column + 1) to (tile.column + radiusNotSquared)) map { unwrappedColumn =>
+        unwrappedColumn % numColumns
+      }
+      val columnsToWest = ((tile.column - radiusNotSquared) to (tile.column - 1)) map { unwrappedColumn =>
+        val x = unwrappedColumn % numColumns
+        if (x < 0) numColumns + x else x
+      }
+      val numRows = parameters.rows
+      val rowsToNorth = ((tile.row - radiusNotSquared) to (tile.row - 1)) map { unwrappedRow =>
+        val y = unwrappedRow % numRows
+        if (y < 0) numRows + y else y
+      }
+      val rowsToSouth = ((tile.row + 1) to (tile.row + radiusNotSquared)) map { unwrappedRow =>
+        unwrappedRow % numRows
+      }
+      
+      val tilesInBox = for (
+        x <- Set() ++ columnsToEast ++ columnsToWest + tile.column;
+        y <- Set() ++ rowsToNorth ++ rowsToSouth + tile.row
+      ) yield Tile(x, y)
+
+      tilesInBox.filter{
+        distanceFrom(tile).to(_) <= radiusSquared         
+      }.toSet
+    }
+  } 
 }
 

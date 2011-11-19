@@ -9,6 +9,7 @@ class MyBot extends Bot {
     gameTracker = updatedGameTracker(game, gameTracker)
     val strategy = new MyBotStrategy(game, gameTracker)
     val tileToUtility = strategy.calculatedUtilities
+    println("tileToUtility: " + tileToUtility)
     var updatedGame = game
     game.board.myAnts.values.flatMap{myAnt =>
       val allowedMovements = AntMovement.allowedFor(myAnt).in(game = updatedGame)
@@ -29,10 +30,19 @@ class MyBot extends Bot {
 //    val startTime = System.currentTimeMillis()
     val currentTurn = game.turn
     val myAntTiles = game.board.myAnts.keySet
-    val visitedUpdates = myAntTiles.map{tile =>
-      (tile, currentTurn)
+    val visitedUpdates = myAntTiles.map{ tile =>
+      tile -> currentTurn
     }
     val updatedTileVisits = previousGameTracker.tileToLastTurnVisited ++ visitedUpdates
+
+    
+    val tilesWithinViewRadius = game.tilesWithinRadius(game.parameters.viewRadius)
+    val viewable = myAntTiles map { tile =>
+      (tile -> previousGameTracker.tileToVisibleTiles.getOrElse(tile, tilesWithinViewRadius of tile))
+    }
+
+    val updatedTileToViewable = previousGameTracker.tileToVisibleTiles ++ viewable
+    val updatedTileViews = previousGameTracker.tileToLastTurnViewed ++ viewable.map{ _._1 -> currentTurn}
 
     val adjacentUpdates = myAntTiles.filterNot{
       previousGameTracker.tileToAdjacentReachableTiles.contains(_)
@@ -44,7 +54,7 @@ class MyBot extends Bot {
     // TODO explored should really include all tiles that have been within visibility - not just tiles to which ants have actually moved
 //    val timeTook = System.currentTimeMillis() - startTime
 //    println("updatedGameTracker took millis: " + timeTook)
-    previousGameTracker.copy(tileToLastTurnVisited = updatedTileVisits, tileToAdjacentReachableTiles = updatedAdjacentTiles)
+    previousGameTracker.copy(tileToLastTurnVisited = updatedTileVisits, tileToLastTurnViewed = updatedTileViews, tileToVisibleTiles = updatedTileToViewable, tileToAdjacentReachableTiles = updatedAdjacentTiles)
   }
 
 }

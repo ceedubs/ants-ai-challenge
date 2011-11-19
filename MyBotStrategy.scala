@@ -21,9 +21,10 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     } else if (board.enemyAnts.contains(tile)) {
       return -200
     } else {
-      val lastTurnVisited = gameTracker.tileToLastTurnVisited.getOrElse(tile, 0); 
+      val lastTurnViewed = gameTracker.tileToLastTurnViewed.getOrElse(tile, 0)
+//      val lastTurnVisited = gameTracker.tileToLastTurnVisited.getOrElse(tile, 0);
       // consider modifying so that this doesn't end up weighting more than other things if a lot of turns have passed since a square was visited
-      return turnsPassedWeight * (game.turn - lastTurnVisited )
+      return turnsPassedWeight * (game.turn - lastTurnViewed)
     }
   }
 
@@ -47,6 +48,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
         val tile = tileContext.tile
         val reward = rewardOf(tile)
         val updatedUtility = reward + discountFactor * maxAdjacentTileUtility
+        println("reward: " + reward + "; updatedUtility: " + updatedUtility)
         updatedTileUtilities += tile -> updatedUtility
       }
       tileUtilities = updatedTileUtilities.toMap
