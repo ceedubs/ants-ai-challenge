@@ -1,16 +1,17 @@
 import scala.math.{abs,min,pow}
 
-case class GameInProgress(turn: Int = 0, parameters: GameParameters = GameParameters(), board: Board = Board()) extends Game {
+case class GameInProgress(turn: Int = 0, turnStartTime: Long = System.currentTimeMillis(), parameters: GameParameters = GameParameters(), board: Board = Board()) extends Game {
   val gameOver = false
   def including[P <: Positionable](positionable: P) = this.copy(board = this.board including positionable)
   def including(p: Positionable*): GameInProgress = p.foldLeft(this){(game, positionable) => game.including(positionable)}
 }
-case class GameOver(turn: Int = 0, parameters: GameParameters = GameParameters(), board: Board = Board()) extends Game {
+case class GameOver(turn: Int = 0, turnStartTime: Long = System.currentTimeMillis(), parameters: GameParameters = GameParameters(), board: Board = Board()) extends Game {
   val gameOver = true
 }
 
 sealed trait Game {
   val turn: Int
+  val turnStartTime: Long
   val parameters: GameParameters
   val board: Board
   val gameOver: Boolean
