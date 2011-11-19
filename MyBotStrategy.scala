@@ -32,9 +32,9 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     val tilesToConsider = tilesToConsiderIn(game) 
     var tileUtilities: Map[Tile, Float] = Map()
     var expectedIterationTime: Long = 100
-    var iterationNum = 0
+//    var iterationNum = 0
     while (System.currentTimeMillis() + expectedIterationTime < timeToStop) {
-      iterationNum += 1
+//      iterationNum += 1
       val iterationStartTime = System.currentTimeMillis()
       val updatedTileUtilities: collection.mutable.Map[Tile, Float] = collection.mutable.Map()
       tilesToConsider.foreach{tileContext =>
@@ -58,7 +58,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     }
 //    val timeTook = System.currentTimeMillis - startTime
 //    println("calcuatedUtilities took millis: " + timeTook)
-    println("num iterations: " + iterationNum)
+//    println("num iterations: " + iterationNum)
     tileUtilities
   }
 
