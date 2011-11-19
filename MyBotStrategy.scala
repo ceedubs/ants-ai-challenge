@@ -16,7 +16,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     } else if (board.myHills.contains(tile)) {
       return Int.MinValue / 2
     } else if (board.enemyHills.contains(tile)) {
-      return 500
+      return 2000
     } else if (board.enemyAnts.contains(tile)) {
       return -200
     } else {
@@ -68,11 +68,12 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
 
   private def tilesToConsiderIn(game: Game): Set[TileContext] = {
 //    val startTime = System.currentTimeMillis()
-    val seenTiles: collection.mutable.Set[Tile] = collection.mutable.Set() ++ game.board.myAnts.keySet
+    val board = game.board
+    val seenTiles: collection.mutable.Set[Tile] = collection.mutable.Set() ++ board.myAnts.keySet ++ board.enemyHills.keySet ++board.food.keySet
     var leaves: Set[TileContext] = seenTiles.map{tile =>
       tileContextFactory.contextOf(tile)
     }.toSet
-    val reachableTiles: collection.mutable.Set[TileContext] = collection.mutable.Set() ++ leaves
+    val tilesToConsider: collection.mutable.Set[TileContext] = collection.mutable.Set() ++ leaves
     for (i <- 1 to numActionsToLookAhead) {
       val newLeaves: collection.mutable.Set[Tile] = collection.mutable.Set()
 //      println("leaves: " + leaves)
@@ -81,7 +82,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
 //        println("  adjacentTiles: " + adjacentTiles)
         adjacentTiles.foreach{adjacentTile =>
           if (!seenTiles.contains(adjacentTile)) {
-            reachableTiles += tileContextFactory.contextOf(adjacentTile)
+            tilesToConsider += tileContextFactory.contextOf(adjacentTile)
             seenTiles += adjacentTile
             newLeaves += adjacentTile
           }
@@ -97,6 +98,6 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     }
 //    val timeTook = System.currentTimeMillis() - startTime;
 //    println("tilesToConsiderIn took millis: " + timeTook)
-    reachableTiles.toSet
+    tilesToConsider.toSet
   }
 }
