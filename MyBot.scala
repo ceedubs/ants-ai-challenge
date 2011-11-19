@@ -9,7 +9,7 @@ class MyBot extends Bot {
     gameTracker = updatedGameTracker(game, gameTracker)
     val strategy = new MyBotStrategy(game, gameTracker)
     val tileToUtility = strategy.calculatedUtilities
-    println("tileToUtility: " + tileToUtility)
+//    println("tileToUtility: " + tileToUtility)
     var updatedGame = game
     game.board.myAnts.values.flatMap{myAnt =>
       val allowedMovements = AntMovement.allowedFor(myAnt).in(game = updatedGame)
