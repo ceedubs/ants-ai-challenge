@@ -7,9 +7,9 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
 
   def rewardOf(tile: Tile): Int = {
     val board = game.board
-    if (board.myAnts.contains(tile)) {
+/*    if (board.myAnts.contains(tile)) {
       return Int.MinValue  
-    } else if (board.water.contains(tile)) {
+    } else*/ if (board.water.contains(tile)) {
       return Int.MinValue
     } else if (board.food.contains(tile)) {
       return 500
@@ -20,10 +20,11 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     } else if (board.enemyAnts.contains(tile)) {
       return -200
     } else {
-      val lastTurnViewed = gameTracker.tileToLastTurnViewed.getOrElse(tile, 0)
-//      val lastTurnVisited = gameTracker.tileToLastTurnVisited.getOrElse(tile, 0);
+//      val lastTurnViewed = gameTracker.tileToLastTurnViewed.getOrElse(tile, 0)
+      val lastTurnVisited = gameTracker.tileToLastTurnVisited.getOrElse(tile, 0);
       // consider modifying so that this doesn't end up weighting more than other things if a lot of turns have passed since a square was visited
-      return turnsPassedWeight * (game.turn - lastTurnViewed)
+//      return turnsPassedWeight * (game.turn - lastTurnViewed)
+      return turnsPassedWeight * (game.turn - lastTurnVisited)
     }
   }
 

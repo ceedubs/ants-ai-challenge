@@ -37,21 +37,27 @@ class MyBot extends Bot {
 
     
     val tilesWithinViewRadius = game.tilesWithinRadius(game.parameters.viewRadius)
-    val viewable = myAntTiles map { tile =>
-      (tile -> previousGameTracker.tileToVisibleTiles.getOrElse(tile, tilesWithinViewRadius of tile))
+    val myAntToViewableNew = myAntTiles filterNot {
+      previousGameTracker.tileToVisibleTiles.contains(_)
+    } map { myAntTile =>
+      myAntTile -> tilesWithinViewRadius.of(myAntTile)
     }
+    
+    val currentlyViewableTiles = myAntToViewableNew.map{_._2}.flatten
+    val updatedTileViews = previousGameTracker.tileToLastTurnViewed ++ currentlyViewableTiles.map{ _ -> currentTurn }
+    val updatedTileToViewable = previousGameTracker.tileToVisibleTiles ++ myAntToViewableNew
 
-    val updatedTileToViewable = previousGameTracker.tileToVisibleTiles ++ viewable
-    val updatedTileViews = previousGameTracker.tileToLastTurnViewed ++ viewable.map{ _._1 -> currentTurn}
-
-    val adjacentUpdates = myAntTiles.filterNot{
+    val adjacentUpdates = currentlyViewableTiles.filterNot{
       previousGameTracker.tileToAdjacentReachableTiles.contains(_)
-    }.map{tile =>
+    }.map{ tile: Tile =>
       val adjacentTiles = AntMovement.allowedFor(MyAnt(tile)).in(game).map(_.to) - tile
-      (tile, adjacentTiles)
-    }
+      if (adjacentTiles forall {currentlyViewableTiles contains _})
+        Some(tile -> adjacentTiles)
+      else
+        None
+    }.flatten
+    
     val updatedAdjacentTiles = previousGameTracker.tileToAdjacentReachableTiles ++ adjacentUpdates
-    // TODO explored should really include all tiles that have been within visibility - not just tiles to which ants have actually moved
 //    val timeTook = System.currentTimeMillis() - startTime
 //    println("updatedGameTracker took millis: " + timeTook)
     previousGameTracker.copy(tileToLastTurnVisited = updatedTileVisits, tileToLastTurnViewed = updatedTileViews, tileToVisibleTiles = updatedTileToViewable, tileToAdjacentReachableTiles = updatedAdjacentTiles)
