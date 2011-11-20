@@ -1,7 +1,8 @@
 class MyBotStrategy(game: Game, gameTracker: GameTracker) {
-  val discountFactor = 0.95f // gamma
-  val numActionsToLookAhead = 5
-  val turnsPassedWeight = 2
+  private val discountFactor = 0.95f // gamma
+  private val numAdditionalActionsToLookAhead = 1
+  private val turnsPassedWeight = 2
+  private val defaultTileUtility = 0f
 
   val tileContextFactory = new GameTrackingTileContextFactory(gameTracker, game)
 
@@ -31,24 +32,24 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
 //    val startTime = System.currentTimeMillis()
     val timeToStop = game.turnStartTime + game.parameters.turnTime / 2
 //    println("timeToStop: " + timeToStop)
-    val tilesToConsider = tilesToConsiderIn(game) 
-//    println("tilesToConsider: " + tilesToConsider)
-    var tileUtilities: Map[Tile, Float] = Map()
+    var board = game.board
+    var tileUtilities: Map[Tile, Float] = Map() ++ ((board.myAnts.keySet ++ board.food.keySet ++ board.enemyHills.keySet) map { _ -> defaultTileUtility })
+    var tileContexts = tileUtilities.keySet.map{tileContextFactory contextOf _}.toSet
     var expectedIterationTime: Long = 100
     var iterationNum = 0
     while (System.currentTimeMillis() + expectedIterationTime < timeToStop) {
-      iterationNum += 1
+      val updatedTileContexts = collection.mutable.Set() ++ tileContexts
       val iterationStartTime = System.currentTimeMillis()
+      iterationNum += 1
       val updatedTileUtilities: collection.mutable.Map[Tile, Float] = collection.mutable.Map()
-      tilesToConsider.foreach{tileContext =>
+      tileContexts.foreach{tileContext =>
         val adjacentTiles = tileContext.adjacentTiles
-
         val maxAdjacentTileUtility =
           if (adjacentTiles.isEmpty)
             Float.MinValue
           else
             adjacentTiles.map{adjacentTile =>
-              tileUtilities.getOrElse(adjacentTile, 0f)
+              tileUtilities.getOrElse(adjacentTile, defaultTileUtility)
             }.max
         
         val tile = tileContext.tile
@@ -58,23 +59,22 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
         updatedTileUtilities += tile -> updatedUtility
       }
       tileUtilities = updatedTileUtilities.toMap
-      expectedIterationTime = System.currentTimeMillis() - iterationStartTime
+      tileContexts = nextTilesToConsider(tileContexts)
+      expectedIterationTime =  System.currentTimeMillis() - iterationStartTime
     }
 //    val timeTook = System.currentTimeMillis - startTime
 //    println("calcuatedUtilities took millis: " + timeTook)
-//    println("num iterations: " + iterationNum)
+    println("num iterations: " + iterationNum)
     tileUtilities.withDefaultValue(0f)
   }
 
-  private def tilesToConsiderIn(game: Game): Set[TileContext] = {
+  private def nextTilesToConsider(initialSet: Set[TileContext]): Set[TileContext] = {
 //    val startTime = System.currentTimeMillis()
     val board = game.board
-    val seenTiles: collection.mutable.Set[Tile] = collection.mutable.Set() ++ board.myAnts.keySet ++ board.enemyHills.keySet ++board.food.keySet
-    var leaves: Set[TileContext] = seenTiles.map{tile =>
-      tileContextFactory.contextOf(tile)
-    }.toSet
+    var leaves = initialSet
+    val seenTiles = collection.mutable.Set() ++ (leaves map {_.tile})
     val tilesToConsider: collection.mutable.Set[TileContext] = collection.mutable.Set() ++ leaves
-    for (i <- 1 to numActionsToLookAhead) {
+    for (i <- 1 to numAdditionalActionsToLookAhead) {
       val newLeaves: collection.mutable.Set[Tile] = collection.mutable.Set()
 //      println("leaves: " + leaves)
       leaves.foreach{leafTileContext =>
@@ -89,7 +89,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
         }
         
       }
-      if (i != numActionsToLookAhead) {
+      if (i != numAdditionalActionsToLookAhead) {
         leaves = newLeaves.map{tile =>
           tileContextFactory.contextOf(tile)
         }.toSet
