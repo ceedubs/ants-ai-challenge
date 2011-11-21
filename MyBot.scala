@@ -29,7 +29,8 @@ class MyBot extends Bot {
   private def updatedGameTracker(game: Game, previousGameTracker: GameTracker = GameTracker()) = {
 //    val startTime = System.currentTimeMillis()
     val currentTurn = game.turn
-    val myAntTiles = game.board.myAnts.keySet
+    val board = game.board
+    val myAntTiles = board.myAnts.keySet
     val visitedUpdates = myAntTiles.map{ tile =>
       tile -> currentTurn
     }
@@ -60,7 +61,12 @@ class MyBot extends Bot {
     val updatedAdjacentTiles = previousGameTracker.tileToAdjacentReachableTiles ++ adjacentUpdates
 //    val timeTook = System.currentTimeMillis() - startTime
 //    println("updatedGameTracker took millis: " + timeTook)
-    previousGameTracker.copy(tileToLastTurnVisited = updatedTileVisits, tileToLastTurnViewed = updatedTileViews, tileToVisibleTiles = updatedTileToViewable, tileToAdjacentReachableTiles = updatedAdjacentTiles)
+
+    val updatedEnemyHills = previousGameTracker.enemyHills.filter{ hillFromMemory =>
+      board.enemyHills.contains(hillFromMemory) || !currentlyViewableTiles.contains(hillFromMemory)
+    } ++ board.enemyHills.keySet
+
+    previousGameTracker.copy(tileToLastTurnVisited = updatedTileVisits, tileToLastTurnViewed = updatedTileViews, tileToVisibleTiles = updatedTileToViewable, tileToAdjacentReachableTiles = updatedAdjacentTiles, enemyHills = updatedEnemyHills)
   }
 
 }

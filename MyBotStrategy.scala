@@ -18,6 +18,8 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
       return Int.MinValue / 2
     } else if (board.enemyHills.contains(tile)) {
       return 2000
+    } else if (gameTracker.enemyHills.contains(tile)) {
+      return 1600
     } else if (board.enemyAnts.contains(tile)) {
       return -200
     } else {
@@ -34,7 +36,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     val timeToStop = game.turnStartTime + game.parameters.turnTime / 2
 //    println("timeToStop: " + timeToStop)
     var board = game.board
-    var tileUtilities: Map[Tile, Float] = Map() ++ ((board.myAnts.keySet ++ board.food.keySet ++ board.enemyHills.keySet) map { _ -> defaultTileUtility })
+    var tileUtilities: Map[Tile, Float] = Map() ++ ((board.myAnts.keySet ++ board.food.keySet ++ gameTracker.enemyHills) map { _ -> defaultTileUtility })
     var tileContexts = tileUtilities.keySet.map{tileContextFactory contextOf _}.toSet
     var expectedIterationTime: Long = 100
     var iterationNum = 0
@@ -65,7 +67,7 @@ class MyBotStrategy(game: Game, gameTracker: GameTracker) {
     }
 //    val timeTook = System.currentTimeMillis - startTime
 //    println("calcuatedUtilities took millis: " + timeTook)
-    println("num iterations: " + iterationNum)
+//    println("num iterations: " + iterationNum)
     tileUtilities.withDefaultValue(0f)
   }
 
