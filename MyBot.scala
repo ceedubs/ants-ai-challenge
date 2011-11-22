@@ -11,15 +11,17 @@ class MyBot extends Bot {
     val tileToUtility = strategy.calculatedUtilities
 //    println("tileToUtility: " + tileToUtility)
     var updatedGame = game
+    val tileContextFactory = new GameTrackingTileContextFactory(gameTracker, updatedGame)
     game.board.myAnts.values.flatMap{myAnt =>
-      val allowedMovements = AntMovement.allowedFor(myAnt).in(game = updatedGame)
-      val bestMovement = allowedMovements.filter{movement =>
+      val adjacentTiles = tileContextFactory.contextOf(myAnt.tile).adjacentTiles
+
+      val bestAdjacentTile = adjacentTiles.filter{tile =>
         // because ants might have moved around since we calculated utiities, we don't want to run into another ant
-        val to = movement.to
-        !updatedGame.board.myAnts.contains(to) || to == myAnt.tile
-      }.maxBy{movement =>
-        tileToUtility(movement.to)
+        !updatedGame.board.myAnts.contains(tile)
+      }.+(myAnt.tile).maxBy{tile =>
+        tileToUtility(tile)
       }
+      val bestMovement = new AntMovement(myAnt, bestAdjacentTile, updatedGame)
       updatedGame = bestMovement.resultState
       bestMovement.toOrders
     }.toSet
@@ -70,4 +72,3 @@ class MyBot extends Bot {
   }
 
 }
-
