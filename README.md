@@ -1,3 +1,10 @@
+# Disclaimer
+I should have forked [Synesso/aichallenge](https://github.com/Synesso/aichallenge),
+but at the time I downloaded the starter package and created a Git repository out of it,
+I didn't realize it was on GitHub. My repository contains only a subset of the files in
+the original repository.The following README, and most of the code in this repository
+is from the Scala starter package that Synesso has provided. Thank you, Synesso!
+
 # Scala Starter Package for Ant Wars
 
 See the section after "Google AI Challenge Blurb" for information
